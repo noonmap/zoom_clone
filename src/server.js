@@ -1,5 +1,5 @@
 import http from "http";
-import WebSocket from "ws";
+import SocketIO from "socket.io";
 import express from "express";
 
 const app = express();
@@ -15,7 +15,14 @@ app.get("/*", (req, res) => res.redirect("/"));
 
 const handleListen = () => console.log(`Listening on http://localhost:3000`);
 
-const server = http.createServer(app); // express app으로부터 http 서버 생성
+const httpServer = http.createServer(app); // express app으로부터 http 서버 생성
+const wsServer = SocketIO(httpServer); // http 서버 위에 ws 서버 올림 (SocketIO 사용)
+
+wsServer.on("connection", (socket) => {
+    console.log(socket);
+});
+// WebSocket 버전 서버
+/*
 const wss = new WebSocket.Server({ server }); // http 서버 위에 ws 서버 생성
 
 const sockets = []; // socket connection을 저장할 fake db
@@ -48,6 +55,7 @@ wss.on("connection", (socket) => {
         }
     });
 });
+*/
 
 // http 서버에 접근 access
-server.listen(3000, handleListen);
+httpServer.listen(3000, handleListen);
