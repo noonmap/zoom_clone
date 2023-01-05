@@ -20,10 +20,12 @@ const wss = new WebSocket.Server({ server }); // http 서버 위에 ws 서버 �
 
 const sockets = []; // socket connection을 저장할 fake db
 
-// websocket event 등록
+// websocket event : 브라우저가 연결될 때마다 실행
 // 2nd param : websocket이 연결됐을 때 실행되는 callback func (socket : 브라우저와 서버 간의 연결)
 wss.on("connection", (socket) => {
     sockets.push(socket); // socket이 연결되면 fake db(array)에 저장
+    socket["nickname"] = "Anonymous"; // 닉네임을 socket 객체에 저장
+
     console.log("Connected to Browser 👍");
 
     // wss 서버가 아니라 socket에 있는 on 메소드 사용
@@ -32,10 +34,18 @@ wss.on("connection", (socket) => {
         console.log("Disconnected from Browser ❌");
     });
     // 이벤트 listener 등록 : 브라우저 -> 서버로 메세지 보냈을 때
-    socket.on("message", (message) => {
-        sockets.forEach((aSocket) => {
-            aSocket.send(message.toString("utf-8"));
-        }); // 각 브라우저에게 msg를 보냄
+    socket.on("message", (msg) => {
+        const message = JSON.parse(msg);
+        switch (message.type) {
+            case "new_message":
+                sockets.forEach((aSocket) =>
+                    aSocket.send(`${socket.nickname}: ${message.payload}`)
+                ); // 각 브라우저에게 msg를 보냄
+                break;
+            case "nickname":
+                socket["nickname"] = message.payload; // 닉네임을 socket 객체에 저장
+                break;
+        }
     });
 });
 

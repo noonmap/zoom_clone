@@ -29,7 +29,7 @@ socket.addEventListener("close", () => {
 function handleSubmit(event) {
     event.preventDefault();
     const input = messageForm.querySelector("input"); // pug에서 입력한 form 메세지 값을 가져옴 -> submit
-    socket.send(input.value); // input 메세지를 서버로 전송
+    socket.send(makeMessage("new_message", input.value)); // input 메세지를 서버로 전송
     input.value = ""; // input 메세지를 비워줌
 }
 messageForm.addEventListener("submit", handleSubmit);
@@ -38,5 +38,6 @@ function handleNickSubmit(event) {
     event.preventDefault();
     const input = nickForm.querySelector("input");
     socket.send(makeMessage("nickname", input.value)); // JSON object를 직렬화해서 전송
+    input.value = "";
 }
 nickForm.addEventListener("submit", handleNickSubmit);
