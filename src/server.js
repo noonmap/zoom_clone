@@ -24,9 +24,9 @@ const wss = new WebSocket.Server({ server });
 // websocket이 연결됐을 때 실행되는 callback func
 // socket : 브라우저와 서버 간의 연결
 function handleConnection(socket) {
-  console.log(socket);  
+    console.log(socket);
 }
 // websocket event 등록
 wss.on("connection", handleConnection);
 
-app.listen(3000, handleListen);
+server.listen(3000, handleListen);
