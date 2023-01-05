@@ -8,8 +8,15 @@ socket.addEventListener("open", () => {
 
 // socket에 message 받는 이벤트 추가
 socket.addEventListener("message", (message) => {
-    console.log("Just go this: ", message, " from the server");
+    console.log("New message: ", message.data, " from the server");
 });
 
 // 서버와의 connection 종료 이벤트 추가
-socket.addEventListener("close", () => {});
+socket.addEventListener("close", () => {
+    console.log("Disconnected from Server ❌");
+});
+
+// 10초 후 동작
+setTimeout(() => {
+    socket.send("hello from the browser!");
+}, 10000);
