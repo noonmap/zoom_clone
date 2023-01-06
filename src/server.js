@@ -19,10 +19,17 @@ const httpServer = http.createServer(app); // express app으로부터 http 서�
 const wsServer = SocketIO(httpServer); // http 서버 위에 ws 서버 올림 (SocketIO 사용)
 
 wsServer.on("connection", (socket) => {
-    socket.on("enter_room", (msg, done) => {
-        // msg : event emit한 쪽에서 받아온 payload
+    socket.onAny((event) => {
+        // event : listen한 event의 이름
+        console.log(`Socket Event: ${event}`);
+    });
+    socket.on("enter_room", (roomName, done) => {
+        // roomName : event emit한 쪽에서 받아온 payload
         // done : event emit한 쪽에서 받아온 function
-        console.log(msg);
+        console.log(socket.id);
+        console.log(socket.rooms); // default room : socket.id가 들어있다.
+        socket.join(roomName); // room에 입장
+        console.log(socket.rooms);
         setTimeout(() => {
             done();
         }, 1000);
