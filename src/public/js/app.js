@@ -63,12 +63,18 @@ socket.onAny((event) => {
     console.log(`Front Listen ${event}`);
 });
 // 방 입장 이벤트 listener
-socket.on("welcome", (user) => {
+socket.on("welcome", (user, newCount) => {
+    const h3 = room.querySelector("h3"); // 방의 이름을 h3에 표시
+    h3.innerText = `Room ${roomName} (${newCount})`;
+
     console.log("Receive Welcome!");
     addMessage(`${user} Joined!`);
 });
 // 방 퇴장 이벤트 listener
-socket.on("bye", (user) => {
+socket.on("bye", (user, newCount) => {
+    const h3 = room.querySelector("h3"); // 방의 이름을 h3에 표시
+    h3.innerText = `Room ${roomName} (${newCount})`;
+
     addMessage(`${user} Left`);
 });
 // 새로운 메세지 수신 listener
