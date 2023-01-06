@@ -24,15 +24,8 @@ wsServer.on("connection", (socket) => {
         console.log(`Socket Event: ${event}`);
     });
     socket.on("enter_room", (roomName, done) => {
-        // roomName : event emit한 쪽에서 받아온 payload
-        // done : event emit한 쪽에서 받아온 function
-        console.log(socket.id);
-        console.log(socket.rooms); // default room : socket.id가 들어있다.
         socket.join(roomName); // room에 입장
-        console.log(socket.rooms);
-        setTimeout(() => {
-            done();
-        }, 1000);
+        done();
     }); // 사용자 정의 이벤트로 message 수신
 });
 
