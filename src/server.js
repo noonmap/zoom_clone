@@ -19,6 +19,7 @@ const httpServer = http.createServer(app); // express app으로부터 http 서�
 const wsServer = SocketIO(httpServer); // http 서버 위에 ws 서버 올림 (SocketIO 사용)
 
 wsServer.on("connection", (socket) => {
+    socket["nickname"] = "Anonymous";
     socket.onAny((event) => {
         // event : listen한 event의 이름
         console.log(`Socket Event: ${event}`);
@@ -26,17 +27,18 @@ wsServer.on("connection", (socket) => {
     socket.on("enter_room", (roomName, done) => {
         socket.join(roomName); // room에 입장
         done();
-        socket.to(roomName).emit("welcome"); // 방 입장 event emit
+        socket.to(roomName).emit("welcome", socket.nickname); // 방 입장 event emit
     });
     socket.on("disconnecting", () => {
         // 클라이언트가 서버와 연결이 끊어지기 전에,
         // 현재 유저가 접속한 방에게 "bye" 이벤트를 날릴 수 있음
-        socket.rooms.forEach((room) => socket.to(room).emit("bye"));
+        socket.rooms.forEach((room) => socket.to(room).emit("bye", socket.nickname));
     });
     socket.on("new_message", (msg, room, done) => {
-        socket.to(room).emit("new_message", msg);
+        socket.to(room).emit("new_message", `${socket.nickname}: ${msg}`);
         done();
     });
+    socket.on("nickname", (nickname) => (socket["nickname"] = nickname)); // 닉네임을 socket에 저장
 });
 
 // http 서버에 접근 access

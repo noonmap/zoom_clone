@@ -17,7 +17,7 @@ function addMessage(message) {
 /** 방에 입장한 후, 메세지 작성 */
 function handleMessageSubmit(event) {
     event.preventDefault();
-    const input = room.querySelector("input");
+    const input = room.querySelector("#msg input");
     const value = input.value; // 이벤트의 콜백함수가 실행되는 시점까지 저장되어 있어야 하므로
     // 메세지 전송 이벤트
     // 서버에서 new_message이벤트를 listen하면 addMessage를 실행
@@ -26,6 +26,14 @@ function handleMessageSubmit(event) {
     });
     input.value = "";
 }
+
+/** 닉네임 작성 */
+function handleNicknameSubmit(event) {
+    event.preventDefault();
+    const input = room.querySelector("#name input");
+    socket.emit("nickname", input.value);
+}
+
 /** room에 입장했을 때 room form을 숨김 */
 function showRoom() {
     welcome.hidden = true;
@@ -34,8 +42,10 @@ function showRoom() {
     h3.innerText = `Room ${roomName}`;
 
     // 채팅 메세지 입력
-    const form = room.querySelector("form");
-    form.addEventListener("submit", handleMessageSubmit);
+    const msgForm = room.querySelector("#msg");
+    const nameForm = room.querySelector("#name");
+    msgForm.addEventListener("submit", handleMessageSubmit);
+    nameForm.addEventListener("submit", handleNicknameSubmit);
 }
 function handleRoomSubmit(event) {
     event.preventDefault();
@@ -53,13 +63,13 @@ socket.onAny((event) => {
     console.log(`Front Listen ${event}`);
 });
 // 방 입장 이벤트 listener
-socket.on("welcome", () => {
+socket.on("welcome", (user) => {
     console.log("Receive Welcome!");
-    addMessage("Someone Joined!");
+    addMessage(`${user} Joined!`);
 });
 // 방 퇴장 이벤트 listener
-socket.on("bye", () => {
-    addMessage("Someone Left");
+socket.on("bye", (user) => {
+    addMessage(`${user} Left`);
 });
 // 새로운 메세지 수신 listener
 socket.on("new_message", addMessage); // (msg) => addMessage(msg)와 같다
