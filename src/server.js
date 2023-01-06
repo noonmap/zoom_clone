@@ -18,6 +18,25 @@ const handleListen = () => console.log(`Listening on http://localhost:3000`);
 const httpServer = http.createServer(app); // express app으로부터 http 서버 생성
 const wsServer = SocketIO(httpServer); // http 서버 위에 ws 서버 올림 (SocketIO 사용)
 
+/**
+ * socketid === room name인 경우, default로 생성된 private room이다.
+ * socketid에 포함되지 않는 이름인 경우, public room이다.
+ */
+function publicRooms() {
+    // Adapter : 다른 서버들 사이에 실시간 어플리케이션을 동기화하는 일을 해줌
+    const {
+        sockets: {
+            adapter: { sids, rooms },
+        },
+    } = wsServer;
+    const publicRooms = [];
+    rooms.forEach((_, key) => {
+        if (sids.get(key) === undefined) {
+            publicRooms.push(key);
+        }
+    });
+    return publicRooms;
+}
 wsServer.on("connection", (socket) => {
     socket["nickname"] = "Anonymous";
     socket.onAny((event) => {
