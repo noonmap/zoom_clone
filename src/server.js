@@ -27,7 +27,16 @@ wsServer.on("connection", (socket) => {
         socket.join(roomName); // room에 입장
         done();
         socket.to(roomName).emit("welcome"); // 방 입장 event emit
-    }); // 사용자 정의 이벤트로 message 수신
+    });
+    socket.on("disconnecting", () => {
+        // 클라이언트가 서버와 연결이 끊어지기 전에,
+        // 현재 유저가 접속한 방에게 "bye" 이벤트를 날릴 수 있음
+        socket.rooms.forEach((room) => socket.to(room).emit("bye"));
+    });
+    socket.on("new_message", (msg, room, done) => {
+        socket.to(room).emit("new_message", msg);
+        done();
+    });
 });
 
 // http 서버에 접근 access
