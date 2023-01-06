@@ -47,11 +47,16 @@ wsServer.on("connection", (socket) => {
         socket.join(roomName); // room에 입장
         done();
         socket.to(roomName).emit("welcome", socket.nickname); // 방 입장 event emit
+        // 어플리케이션 안에 있는 모두에게 event를 보냄
+        wsServer.sockets.emit("room_change", publicRooms()); // 반 변경사항 생김 event
     });
     socket.on("disconnecting", () => {
         // 클라이언트가 서버와 연결이 끊어지기 전에,
         // 현재 유저가 접속한 방에게 "bye" 이벤트를 날릴 수 있음
         socket.rooms.forEach((room) => socket.to(room).emit("bye", socket.nickname));
+    });
+    socket.on("disconnect", () => {
+        wsServer.sockets.emit("room_change", publicRooms()); // 반 변경사항 생김 event
     });
     socket.on("new_message", (msg, room, done) => {
         socket.to(room).emit("new_message", `${socket.nickname}: ${msg}`);

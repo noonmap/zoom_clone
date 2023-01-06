@@ -73,3 +73,19 @@ socket.on("bye", (user) => {
 });
 // 새로운 메세지 수신 listener
 socket.on("new_message", addMessage); // (msg) => addMessage(msg)와 같다
+// 방의 상태 변경시 마다 public room의 list를 update
+// => 방에 들어가기 전 기다릴 때, 열려있는 모든 방의 list를 볼 수 있음
+socket.on("room_change", (rooms) => {
+    const roomList = welcome.querySelector("ul");
+    // 다시 실행할 때 rooms 배열이 비어있으면 render를 안하기 때문에
+    // 리스트를 만들지 않도록 처리해줌
+    if (rooms.length === 0) {
+        roomList.innerHTML = "";
+        return;
+    }
+    rooms.forEach((room) => {
+        const li = document.createElement("li");
+        li.innerText = room;
+        roomList.append(li);
+    });
+}); // 반 변경사항 생김 event
