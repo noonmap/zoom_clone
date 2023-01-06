@@ -26,6 +26,7 @@ wsServer.on("connection", (socket) => {
     socket.on("enter_room", (roomName, done) => {
         socket.join(roomName); // room에 입장
         done();
+        socket.to(roomName).emit("welcome"); // 방 입장 event emit
     }); // 사용자 정의 이벤트로 message 수신
 });
 
