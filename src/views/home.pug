@@ -10,9 +10,10 @@ html(lang="en")
     header 
       hl Noom 
     main
-      //- 
-        autoplay : 자동 재생, playsinline : 모바일에서 비디어 전체화면 안되게 해주는 거
-      //
-      video#myFace(autoplay, playsinline, width="400", height="400")
+      div#myStream
+        //- autoplay : 자동 재생, playsinline : 모바일에서 비디어 전체화면 안되게 해주는 거 //
+        video#myFace(autoplay, playsinline, width="400", height="400")
+        button#mute Mute
+        button#camera Turn Camera Off
     script(src="/socket.io/socket.io.js")
     script(src="/public/js/app.js") 

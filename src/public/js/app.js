@@ -1,8 +1,12 @@
 const socket = io();
 
 const myFace = document.getElementById("myFace");
+const muteBtn = document.getElementById("mute");
+const cameraBtn = document.getElementById("camera");
 
 let myStream; // stream = video + audio
+let muted = false;
+let cameraOff = false;
 
 async function getMedia() {
     try {
@@ -21,3 +25,30 @@ async function getMedia() {
 }
 
 getMedia();
+
+function handleMuteClick() {
+    // Audio track을 mute/unmute
+    myStream.getAudioTracks().forEach((track) => (track.enabled = !track.enabled));
+    // 버튼 토글
+    if (muted) {
+        muteBtn.innerText = "Mute";
+        muted = false;
+    } else {
+        muteBtn.innerText = "Unmute";
+        muted = true;
+    }
+}
+function handleCameraClick() {
+    // Video track을 on/off
+    myStream.getVideoTracks().forEach((track) => (track.enabled = !track.enabled));
+    // 버튼 토글
+    if (cameraOff) {
+        cameraBtn.innerText = "Turn Camera Off";
+        cameraOff = false;
+    } else {
+        cameraBtn.innerText = "Turn Camera On";
+        cameraOff = true;
+    }
+}
+muteBtn.addEventListener("click", handleMuteClick);
+cameraBtn.addEventListener("click", handleCameraClick);
