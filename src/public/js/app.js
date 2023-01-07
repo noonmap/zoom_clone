@@ -11,6 +11,7 @@ let myStream; // stream = video + audio
 let muted = false;
 let cameraOff = false;
 let roomName;
+let myPeerConnection;
 
 async function getCameras() {
     try {
@@ -66,8 +67,6 @@ async function getMedia(deviceId) {
     }
 }
 
-// getMedia(); -> 이제 room에 입장하면 미디어 장치 시작할 거임
-
 function handleMuteClick() {
     // Audio track을 mute/unmute
     myStream.getAudioTracks().forEach((track) => (track.enabled = !track.enabled));
@@ -107,10 +106,11 @@ const welcome = document.getElementById("welcome"); // room 입장 block
 const welcomeForm = welcome.querySelector("form");
 
 /** 방 입장 후, 미디어 장치 시작 & 표시 */
-function startMedia() {
+async function startMedia() {
     welcome.hidden = true; // room name 입력 block 가림
     call.hidden = false; // 카메라 block을 보이게 함
-    getMedia(); // 미디어 장치 시작시킴
+    await getMedia(); // 미디어 장치 시작시킴
+    makeConnection();
 }
 /** 방 입장 */
 function handleWelcomeSubmit(event) {
@@ -123,6 +123,23 @@ function handleWelcomeSubmit(event) {
 welcomeForm.addEventListener("submit", handleWelcomeSubmit);
 
 /** 다른 사람이 방에 입장했을 때 */
-socket.on("welcome", () => {
-    console.log("someone joined");
+socket.on("welcome", async () => {
+    const offer = await myPeerConnection.createOffer();
+    myPeerConnection.setLocalDescription(offer);
+    console.log("Sent");
+    // 이 emit은 Room에 먼저 입장한 유저가 실행함. offer를 생성하는 입장 -> 서버가 받음
+    socket.emit("offer", offer, roomName); // 방(roomName)의 초대장(offer)를 보냄(emit)
 });
+
+// 이 on은 Room에 뒤에 입장하는 유저가 받음. offer를 받는 입장 <- 서버가 emit함
+socket.on("offer", (offer) => {
+    console.log(offer);
+});
+
+// RTC Code
+
+/** 유저 간 P2P 연결 */
+function makeConnection() {
+    myPeerConnection = new RTCPeerConnection(); // P2P 연결 (전역으로 저장)
+    myStream.getTracks().forEach((track) => myPeerConnection.addTrack(track, myStream)); // 카메라, 마이크의 데이터 stream을 받아서 connection안에 넣음
+}

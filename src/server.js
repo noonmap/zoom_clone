@@ -24,6 +24,9 @@ wsServer.on("connection", (socket) => {
         done();
         socket.to(roomName).emit("welcome");
     });
+    socket.on("offer", (offer, roomName) => {
+        socket.to(roomName).emit("offer", offer);
+    });
 });
 // http 서버에 접근 access
 httpServer.listen(3000, handleListen);
