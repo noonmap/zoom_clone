@@ -94,6 +94,14 @@ function handleCameraClick() {
 async function handleCameraChange() {
     // 카메라 장치의 device id를 이용해서 비디오 stream을 강제로 다시 시작
     await getMedia(camerasSelect.value);
+    // p2p연결했을 시, peer connection에도 카메라 변경사항을 적용하기 위함.
+    if (myPeerConnection) {
+        const videoTrack = myStream.getVideoTracks()[0]; // 내 변경된 track을 찾음
+        const videoSender = myPeerConnection // 내 video track을 전송하는 RTCSender를 찾음
+            .getSenders()
+            .find((sender) => sender.track.kind === "video");
+        videoSender.replaceTrack(videoTrack); // 상대에게 보내진 track을 변경함
+    }
 }
 
 muteBtn.addEventListener("click", handleMuteClick);
