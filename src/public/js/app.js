@@ -4,10 +4,13 @@ const myFace = document.getElementById("myFace");
 const muteBtn = document.getElementById("mute");
 const cameraBtn = document.getElementById("camera");
 const camerasSelect = document.getElementById("cameras");
+const call = document.getElementById("call"); // 카메라 나타나는 block
+call.hidden = true;
 
 let myStream; // stream = video + audio
 let muted = false;
 let cameraOff = false;
+let roomName;
 
 async function getCameras() {
     try {
@@ -63,7 +66,7 @@ async function getMedia(deviceId) {
     }
 }
 
-getMedia();
+// getMedia(); -> 이제 room에 입장하면 미디어 장치 시작할 거임
 
 function handleMuteClick() {
     // Audio track을 mute/unmute
@@ -97,3 +100,29 @@ async function handleCameraChange() {
 muteBtn.addEventListener("click", handleMuteClick);
 cameraBtn.addEventListener("click", handleCameraClick);
 camerasSelect.addEventListener("input", handleCameraChange);
+
+// Welcome Form (join a room)
+
+const welcome = document.getElementById("welcome"); // room 입장 block
+const welcomeForm = welcome.querySelector("form");
+
+/** 방 입장 후, 미디어 장치 시작 & 표시 */
+function startMedia() {
+    welcome.hidden = true; // room name 입력 block 가림
+    call.hidden = false; // 카메라 block을 보이게 함
+    getMedia(); // 미디어 장치 시작시킴
+}
+/** 방 입장 */
+function handleWelcomeSubmit(event) {
+    event.preventDefault();
+    const input = welcomeForm.querySelector("input");
+    socket.emit("join_room", input.value, startMedia); // 서버로 room name 전달
+    roomName = input.value;
+    input.value = "";
+}
+welcomeForm.addEventListener("submit", handleWelcomeSubmit);
+
+/** 다른 사람이 방에 입장했을 때 */
+socket.on("welcome", () => {
+    console.log("someone joined");
+});
