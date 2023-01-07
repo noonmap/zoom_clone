@@ -162,7 +162,20 @@ socket.on("ice", (ice) => {
 
 /** 유저 간 P2P 연결 */
 function makeConnection() {
-    myPeerConnection = new RTCPeerConnection(); // P2P 연결 (전역으로 저장)
+    myPeerConnection = new RTCPeerConnection({
+        iceServers: [
+            {
+                // google의 stun server. real service할 땐 절대 쓰지 말기
+                urls: [
+                    "stun:stun.l.google.com:19302",
+                    "stun:stun1.l.google.com:19302",
+                    "stun:stun2.l.google.com:19302",
+                    "stun:stun3.l.google.com:19302",
+                    "stun:stun4.l.google.com:19302",
+                ],
+            },
+        ],
+    }); // P2P 연결 (전역으로 저장)
     myPeerConnection.addEventListener("icecandidate", handleIce); // offer, answer 교환 과정 끝나면 발생하는 icecandidate 이벤트를 listen해야 함.
     myPeerConnection.addEventListener("addstream", handleAddStream); // candidate 정보 교환 후, stream data를 주고받음
     myStream.getTracks().forEach((track) => myPeerConnection.addTrack(track, myStream)); // 카메라, 마이크의 데이터 stream을 받아서 connection안에 넣음
