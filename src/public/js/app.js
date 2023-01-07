@@ -146,10 +146,27 @@ socket.on("answer", (answer) => {
     myPeerConnection.setRemoteDescription(answer);
 });
 
+/** [5] 받은 ice candidate를 등록함 (서버 경유) */
+socket.on("ice", (ice) => {
+    myPeerConnection.addIceCandidate(ice);
+});
 // RTC Code
 
 /** 유저 간 P2P 연결 */
 function makeConnection() {
     myPeerConnection = new RTCPeerConnection(); // P2P 연결 (전역으로 저장)
+    myPeerConnection.addEventListener("icecandidate", handleIce); // offer, answer 교환 과정 끝나면 발생하는 icecandidate 이벤트를 listen해야 함.
+    myPeerConnection.addEventListener("addstream", handleAddStream); // candidate 정보 교환 후, stream data를 주고받음
     myStream.getTracks().forEach((track) => myPeerConnection.addTrack(track, myStream)); // 카메라, 마이크의 데이터 stream을 받아서 connection안에 넣음
+}
+
+/** [4] ice candidate를 상대 브라우저로 보냄 (서버 경유) */
+function handleIce(data) {
+    socket.emit("ice", data.candidate, roomName);
+}
+
+/** [6] 상대의 stream 데이터(비디오)를 받아서 띄워줌 */
+function handleAddStream(data) {
+    const peerFace = document.getElementById("peerFace");
+    peerFace.srcObject = data.stream; // remote stream을 세팅함.
 }
