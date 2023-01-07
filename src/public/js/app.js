@@ -106,34 +106,44 @@ const welcome = document.getElementById("welcome"); // room 입장 block
 const welcomeForm = welcome.querySelector("form");
 
 /** 방 입장 후, 미디어 장치 시작 & 표시 */
-async function startMedia() {
+async function initCall() {
     welcome.hidden = true; // room name 입력 block 가림
     call.hidden = false; // 카메라 block을 보이게 함
     await getMedia(); // 미디어 장치 시작시킴
     makeConnection();
 }
 /** 방 입장 */
-function handleWelcomeSubmit(event) {
+async function handleWelcomeSubmit(event) {
     event.preventDefault();
     const input = welcomeForm.querySelector("input");
-    socket.emit("join_room", input.value, startMedia); // 서버로 room name 전달
+    // Websocket 속도(상대가 offer를 보내는 속도) < media 가져오는 속도나 연결 만드는 속도
+    //  => 내 peerConnection이 생성된 후에 join_room이벤트가 실행되도록 순서를 정해줘야 함
+    await initCall();
+    socket.emit("join_room", input.value); // 서버로 room name 전달
     roomName = input.value;
     input.value = "";
 }
 welcomeForm.addEventListener("submit", handleWelcomeSubmit);
 
-/** 다른 사람이 방에 입장했을 때 */
+/** [1] Room 선입장한 유저 : offer를 생성 & Local에 등록 & 전달 (서버 경유) */
 socket.on("welcome", async () => {
     const offer = await myPeerConnection.createOffer();
     myPeerConnection.setLocalDescription(offer);
     console.log("Sent");
-    // 이 emit은 Room에 먼저 입장한 유저가 실행함. offer를 생성하는 입장 -> 서버가 받음
     socket.emit("offer", offer, roomName); // 방(roomName)의 초대장(offer)를 보냄(emit)
 });
 
-// 이 on은 Room에 뒤에 입장하는 유저가 받음. offer를 받는 입장 <- 서버가 emit함
-socket.on("offer", (offer) => {
-    console.log(offer);
+/** [2] Room 후입장하는 유저 : offer를 받고 Remote에 등록, answer를 생성 & Local에 등록 & 전달 (서버 경유) */
+socket.on("offer", async (offer) => {
+    myPeerConnection.setRemoteDescription(offer);
+    const answer = await myPeerConnection.createAnswer();
+    myPeerConnection.setLocalDescription(answer);
+    socket.emit("answer", answer, roomName);
+});
+
+/** [3] Room 선입장한 유저 : answer를 받고 Remote에 등록 */
+socket.on("answer", (answer) => {
+    myPeerConnection.setRemoteDescription(answer);
 });
 
 // RTC Code
