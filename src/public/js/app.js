@@ -3,10 +3,28 @@ const socket = io();
 const myFace = document.getElementById("myFace");
 const muteBtn = document.getElementById("mute");
 const cameraBtn = document.getElementById("camera");
+const camerasSelect = document.getElementById("cameras");
 
 let myStream; // stream = video + audio
 let muted = false;
 let cameraOff = false;
+
+async function getCameras() {
+    try {
+        /** 유저의 모든 장치와 미디어 장치들의 목록을 얻음 */
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const cameras = devices.filter((devices) => devices.kind === "videoinput");
+        // 카메라를 선택할 수 있는 option창 추가
+        cameras.forEach((camera) => {
+            const option = document.createElement("option");
+            option.value = camera.deviceId; // 선택한 카메라의 id
+            option.innerText = camera.label; // 선택한 카메라의 이름
+            camerasSelect.appendChild(option);
+        });
+    } catch (e) {
+        console.log(e);
+    }
+}
 
 async function getMedia() {
     try {
@@ -19,6 +37,7 @@ async function getMedia() {
             video: true,
         });
         myFace.srcObject = myStream; // 브라우저에 stream 렌더링
+        await getCameras();
     } catch (e) {
         console.log(e);
     }
